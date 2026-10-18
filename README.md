@@ -195,6 +195,6 @@ Tripwise/
 - Photography: [Unsplash](https://unsplash.com) and the photographers credited in the app
 - Weather: [Open-Meteo](https://open-meteo.com)
 - Maps: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, rendered with [Leaflet](https://leafletjs.com)
-- Design inspired by the Boldcraft template
+
 
 Built by **Shreyash Nidhan** for the AWS Student Builder Group, VIT Chennai.
