@@ -25,7 +25,7 @@ Planning a trip usually means searching several websites. TripWise brings it int
 
 The app shows clear **loading**, **empty** and **error** states, and validates every request on the server.
 
-## Features (mapped to the task brief)
+## Features 
 
 | Requirement | Implementation |
 |---|---|
