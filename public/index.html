@@ -1,0 +1,241 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TripWise — Smart Travel Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="favicon.png"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>:root{--mid:#121212;--surf:#211D1A;--gold:#C88D65;--ivory:#F4EEE8;--mist:#BCB0A4;--line:rgba(231,216,201,.16);--ease:cubic-bezier(.2,.8,.2,1)}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth;color-scheme:dark}
+body{font:400 16px/24px 'DM Sans',sans-serif;background:var(--mid);color:var(--mist);overflow-x:hidden}
+h1,h2,h3,.logo,.big{font-family:Manrope,sans-serif;color:var(--ivory);letter-spacing:-.03em}
+button,select,input{font:inherit;color:inherit}img{display:block;width:100%;height:100%;object-fit:cover}
+.wrap{max-width:1440px;margin:0 auto;padding:0 32px}[hidden]{display:none!important}
+.btn{position:relative;isolation:isolate;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:56px;padding:0 32px;border-radius:999px;border:1px solid var(--gold);background:var(--gold);color:var(--mid);font-weight:600;cursor:pointer;text-decoration:none;transition:color .4s var(--ease),border-color .4s}
+.btn:before{content:"";position:absolute;inset:0;z-index:-1;background:var(--ivory);border-radius:50% 50% 0 0;transform:translateY(101%);transition:transform .5s var(--ease),border-radius .5s var(--ease)}
+.btn:hover:before{transform:none;border-radius:0}.btn:hover{border-color:var(--ivory)}
+.btn.ghost{background:none;color:var(--ivory);border-color:var(--line)}.btn.ghost:before{background:var(--gold)}.btn.ghost:hover{color:var(--mid);border-color:var(--gold)}
+.btn.sm{height:40px;padding:0 24px}.btn.ar{width:56px;padding:0;font-size:24px}.btn:disabled{opacity:.3;cursor:default}.btn:disabled:before{display:none}
+nav{position:sticky;top:0;z-index:5;border-bottom:1px solid transparent;transition:transform .5s var(--ease),background .4s,border-color .4s}nav.hid{transform:translateY(-100%)}nav.bg{background:rgba(18,18,18,.8);backdrop-filter:blur(16px);border-color:var(--line)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:96px}
+.logo{display:flex;align-items:center;gap:16px;font-weight:800;font-size:24px;text-decoration:none}.logo img{width:56px;height:48px;object-fit:contain}.logo span{color:var(--gold)}
+.links{display:flex;gap:40px}.links a{position:relative;font-size:14px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ivory);text-decoration:none;padding:8px 0}
+.links a:after{content:"";position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--gold);transform:scaleX(0);transform-origin:right;transition:transform .5s var(--ease)}.links a:hover:after,.links a.on:after{transform:scaleX(1);transform-origin:left}
+.badge{display:inline-block;background:var(--gold);color:var(--mid);border-radius:16px;height:24px;padding:0 8px;margin-left:8px;font-size:12px}
+.tag{font-size:14px;line-height:24px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.hero{padding:64px 0 96px}h1{font-weight:800;text-transform:uppercase;font-size:clamp(40px,8.5vw,136px);line-height:.92;margin:32px 0 48px}h1 em{font-style:normal;color:var(--gold)}
+.w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.12em;margin-bottom:-.12em}.w>span{display:inline-block;transform:translateY(110%);transition:transform 1.1s var(--ease) calc(var(--i)*70ms)}.in .w>span{transform:none}
+.hf{display:flex;justify-content:space-between;align-items:flex-end;gap:32px;flex-wrap:wrap}.hf p{max-width:560px;font-size:18px;line-height:32px}
+.sl{margin-top:96px}.ars{display:flex;gap:16px;justify-content:flex-end;margin-bottom:32px}
+.tiles{display:flex;align-items:flex-start;gap:24px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:48px}.tiles::-webkit-scrollbar{display:none}
+.tile{flex:none;width:clamp(264px,28vw,408px);aspect-ratio:3/4;border-radius:32px;overflow:hidden;background:var(--surf);position:relative;scroll-snap-align:start;cursor:pointer}.tile:nth-child(even){margin-top:48px}
+.tile:nth-child(odd){translate:0 calc(var(--sy,0)*-.04px)}.tile:nth-child(even){translate:0 calc(var(--sy,0)*.04px)}
+.tile img{transition:transform 1.2s var(--ease)}.tile:hover img{transform:scale(1.08)}
+.tile span{position:absolute;left:24px;bottom:24px;background:var(--ivory);color:var(--mid);font:700 12px/16px Manrope;letter-spacing:.08em;text-transform:uppercase;padding:8px 16px;border-radius:999px}
+.fl{object-fit:contain;padding:32px}
+.marq{border-block:1px solid var(--line);overflow:hidden;white-space:nowrap;padding:32px 0}.marq div{display:inline-block;animation:m 40s linear infinite;font:800 clamp(32px,4.5vw,72px)/1 Manrope;color:var(--ivory);text-transform:uppercase;letter-spacing:-.03em}.marq:hover div{animation-play-state:paused}.marq i{color:var(--gold);margin:0 40px;font-style:normal}
+@keyframes m{to{transform:translateX(-50%)}}@keyframes up{from{opacity:0;transform:translateY(40px)}}
+.rv{opacity:0}.rv.in{opacity:1;animation:up .9s var(--ease) var(--d,0ms) backwards}main:not([hidden]){animation:up .8s var(--ease)}
+section{padding:128px 0}.sec{display:flex;gap:16px;align-items:center;margin-bottom:40px}.sec b{display:inline-flex;align-items:center;height:32px;padding:0 16px;border:1px solid var(--line);border-radius:999px;font:700 14px/24px Manrope;color:var(--gold)}
+h2{font-weight:800;text-transform:uppercase;font-size:clamp(32px,4.8vw,72px);line-height:1;margin-bottom:32px;max-width:1200px}
+.lead{font:600 clamp(20px,2.4vw,32px)/1.3 Manrope;letter-spacing:-.02em;color:var(--ivory);max-width:960px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:96px}.stats>div{border-top:1px solid var(--line);padding-top:24px}
+.big{font-size:clamp(48px,6vw,96px);font-weight:800;line-height:1;margin-bottom:8px}.pl:after{content:"+"}
+.ctl{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:16px;margin:48px 0 24px}
+.ctl input,.ctl select{height:56px;padding:0 24px;border:1px solid var(--line);border-radius:999px;background:var(--surf);color:var(--ivory);width:100%;transition:border-color .3s}
+.ctl input:focus,.ctl select:focus{outline:0;border-color:var(--gold)}.ctl .btn{height:56px}option{background:var(--surf);color:var(--ivory)}
+.tog{display:flex;gap:8px;margin-bottom:40px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(256px,1fr));gap:48px 24px}
+.card{display:flex;flex-direction:column}
+.ph{aspect-ratio:1/1;border-radius:24px;background:linear-gradient(135deg,#2c2621,var(--surf));position:relative;overflow:hidden;cursor:pointer}.ph img{transition:transform 1s var(--ease)}.card:hover .ph img{transform:scale(1.06)}
+.sk{animation:p 1.2s infinite}@keyframes p{50%{opacity:.5}}
+.cb{padding:24px 0 0;display:flex;flex-direction:column;gap:8px;flex:1}.cb h3{font-size:24px;line-height:32px;text-transform:uppercase;display:flex;gap:16px;align-items:center}.cb h3 img{width:32px;height:24px;border-radius:4px;flex:none}
+.meta{font-size:14px;line-height:24px;color:var(--gold);letter-spacing:.04em;text-transform:uppercase}.row{display:flex;gap:8px;margin-top:auto;padding-top:16px}
+.chip{display:inline-flex;align-items:center;height:32px;border:1px solid var(--line);padding:0 16px;border-radius:999px;font-size:14px}
+.state{text-align:center;padding:96px 0;grid-column:1/-1}.state h3{font-size:32px;line-height:40px;margin-bottom:8px}.state .btn{margin-top:24px}
+#cur{position:fixed;left:0;top:0;z-index:30;width:96px;height:96px;margin:-48px 0 0 -48px;border-radius:50%;background:var(--gold);color:var(--mid);display:flex;align-items:center;justify-content:center;font:700 14px/24px Manrope;letter-spacing:.08em;text-transform:uppercase;pointer-events:none;scale:0;transition:scale .4s var(--ease)}#cur.on{scale:1}
+.stp{display:grid;grid-template-columns:96px 1fr 1fr;gap:32px;align-items:start;border-top:1px solid var(--line);padding:40px 0}.stp:last-child{border-bottom:1px solid var(--line)}
+.stp b{font:700 16px/24px Manrope;color:var(--gold);padding-top:16px}.stp h3{font-size:clamp(24px,3.4vw,56px);line-height:1;text-transform:uppercase;transition:transform .5s var(--ease),color .3s}.stp:hover h3{transform:translateX(16px);color:var(--gold)}
+.stp .d{display:grid;grid-template-rows:0fr;transition:grid-template-rows .6s var(--ease)}.stp:hover .d,.stp:focus .d{grid-template-rows:1fr}.stp .d>div{overflow:hidden;display:flex;flex-direction:column;gap:16px}@media(hover:none){.stp .d{grid-template-rows:1fr}}
+.fq{display:grid;grid-template-columns:1fr 2fr;gap:64px;align-items:start}.fc{position:sticky;top:128px;background:var(--surf);border-radius:32px;padding:40px;display:flex;flex-direction:column;gap:24px;align-items:flex-start}.fc img{width:96px;height:80px;object-fit:contain}.fc h3{font-size:32px;line-height:40px}
+details{border-top:1px solid var(--line);padding:32px 0}summary{display:flex;gap:24px;align-items:baseline;font:700 20px/32px Manrope;color:var(--ivory);cursor:pointer;list-style:none}summary i{font:600 14px/24px 'DM Sans';font-style:normal;color:var(--gold)}
+summary:after{content:"+";margin-left:auto;color:var(--gold);transition:transform .4s var(--ease)}details[open] summary:after{transform:rotate(45deg)}details p{margin:16px 0 0 48px;max-width:640px}
+footer{border-top:1px solid var(--line);padding:96px 0 32px;overflow:hidden}.fg{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px}.fg img{width:240px;height:auto}
+.fg h4{font:600 14px/24px 'DM Sans';letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:16px}.fg a,.fg span{display:block;color:var(--ivory);text-decoration:none;margin-bottom:8px}.fg a:hover{color:var(--gold)}
+footer .big{font-size:clamp(56px,15vw,240px);line-height:.8;text-transform:uppercase;text-align:center;white-space:nowrap;margin:64px 0 32px}footer small{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;margin-top:64px;font-size:14px}
+dialog{border:0;border-radius:32px;max-width:960px;width:calc(100% - 32px);margin:auto;background:var(--surf);color:var(--mist);overflow:hidden}dialog[open]{animation:up .5s var(--ease)}dialog::backdrop{background:rgba(18,18,18,.8);backdrop-filter:blur(8px)}
+.dg{display:grid;grid-template-columns:1fr 1fr}.dg .ph{aspect-ratio:auto;min-height:400px;border-radius:0;cursor:default}.dg .tx{padding:40px;display:flex;flex-direction:column;gap:16px;max-height:80vh;overflow:auto}
+.cr{position:absolute;left:16px;bottom:16px;font-size:12px;line-height:24px;background:rgba(18,18,18,.8);padding:0 8px;border-radius:8px}.cr a{color:var(--gold)}
+dl{display:grid;grid-template-columns:auto 1fr;gap:8px 24px;font-size:14px}dt{font-weight:600;color:var(--gold)}
+.trip{display:flex;gap:24px;align-items:center;border-top:1px solid var(--line);padding:24px 0}.trip .ph{width:160px;aspect-ratio:4/3;border-radius:16px;flex:none;cursor:default}.trip h3{font-size:32px;line-height:40px}.trip>div:nth-child(2){flex:1}
+.toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%);background:var(--gold);color:var(--mid);font-weight:600;padding:16px 24px;border-radius:999px;z-index:40;display:none}
+.tsum{display:grid;grid-template-columns:240px 1fr;gap:32px;margin:32px 0 48px;align-items:center}.cover{aspect-ratio:4/3;border-radius:24px;cursor:default}
+.tn{font:800 clamp(32px,4vw,48px) Manrope;letter-spacing:-.03em;background:none;border:0;border-bottom:1px solid var(--line);color:var(--ivory);width:100%;padding:8px 0}.tn:focus{outline:0;border-color:var(--gold)}
+.tctl{display:flex;flex-wrap:wrap;gap:16px;margin:16px 0}.fld,.ef select,.ef input,.sr select,.sr input{height:40px;padding:0 16px;border:1px solid var(--line);border-radius:999px;background:var(--mid);color:var(--ivory)}
+.fld:focus,.ef select:focus,.ef input:focus,.sr select:focus,.sr input:focus,.ad input:focus,.ad select:focus{outline:0;border-color:var(--gold)}
+.dh{display:flex;justify-content:space-between;align-items:baseline;padding-top:32px;margin-top:32px;border-top:1px solid var(--gold)}.dh h3{font-size:32px;line-height:40px}
+.ef{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}.ef input[type=number]{width:128px}.ef input[data-note]{flex:1;min-width:200px}
+.cty{border-top:1px solid var(--gold);padding-top:48px;margin-top:48px}.cty .dh{border-top:1px solid var(--line)}
+.ch{display:flex;gap:24px;align-items:center;flex-wrap:wrap}.ch .ph{width:96px;aspect-ratio:1;border-radius:16px;flex:none;cursor:default}.ci{flex:1;min-width:240px}.ci h3{font-size:32px;line-height:40px}
+.al{display:flex;flex-direction:column;gap:8px;margin-top:16px;max-width:480px}.bar{height:8px;border-radius:8px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--gold);transition:width .5s var(--ease)}
+.ad{display:flex;gap:8px;flex-wrap:wrap;margin:32px 0 8px}.ad input,.ad select{height:40px;padding:0 16px;border:1px solid var(--line);border-radius:999px;background:var(--surf);color:var(--ivory)}.ad input{flex:1;min-width:240px}
+.sr{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:16px 0;border-top:1px solid var(--line)}.sr b{flex:1;min-width:160px;color:var(--ivory);font-size:18px}.sr input[type=number]{width:128px}.sr input[data-snote]{flex:2;min-width:160px}
+.ac{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.ic{width:40px;padding:0}.emp{padding:24px;border:1px dashed var(--line);border-radius:16px;margin-top:16px}
+.map{height:480px;border-radius:32px;overflow:hidden;border:1px solid var(--line);margin:24px 0;background:var(--surf)}.leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.9) contrast(.9) sepia(.3)}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--surf);color:var(--mist)}.leaflet-popup-content b{color:var(--ivory)}.leaflet-popup-content .row{padding-top:8px}
+.pinw{background:none;border:0}.pin{width:32px;height:32px;border-radius:50%;background:var(--gold);color:var(--mid);border:2px solid var(--ivory);display:flex;align-items:center;justify-content:center;font:700 14px Manrope}
+.tm{padding:40px;max-height:80vh;overflow:auto;display:flex;flex-direction:column;gap:16px}.tm ol{padding-left:24px;display:flex;flex-direction:column;gap:8px;font-size:14px}.tm b{color:var(--ivory)}
+@media(max-width:800px){.wrap{padding:0 24px}section{padding:96px 0}.links{gap:16px}nav .btn{display:none}.ctl,.stats,.dg,.tsum,.stp,.fq,.fg{grid-template-columns:1fr}.fc{position:static}.dg .ph{min-height:240px}.trip{flex-wrap:wrap}.trip .ph{width:100%}.map{height:360px}.tm{padding:24px}.tile:nth-child(even){margin-top:0}#cur{display:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1}.w>span{transform:none}}
+</style></head><body>
+<nav><div class="wrap"><a class="logo" href="#/"><img src="logo-mark.png" alt="">Trip<span>Wise</span></a><div class="links"><a href="#/" id="nE">Explore</a><a href="#/trip" id="nT">My Trip<span class="badge" id="cnt">0</span></a></div><a class="btn sm" href="#explore" onclick="go('#/')">Start Planning</a></div></nav>
+<div id="cur"></div>
+<main id="home">
+<div class="hero wrap"><div class="tag">Smart Travel Planner</div><h1>Plan trips that feel <em>effortless</em></h1>
+<div class="hf"><p>Discover destinations, check the weather, and build a personal itinerary, all in one place.</p><a class="btn" href="#explore">Explore destinations ↓</a></div>
+<div class="sl"><div class="ars"><button class="btn ghost ar" data-sl="-1" aria-label="Previous">←</button><button class="btn ghost ar" data-sl="1" aria-label="Next">→</button></div><div class="tiles" id="tiles"></div></div></div>
+<div class="marq"><div id="mq"></div></div>
+<section class="wrap"><div class="sec"><b>01</b><span class="tag">Why TripWise</span></div>
+<p class="lead">Live country data, real photography and current weather come together so you can shortlist places in minutes and keep your trip saved for later.</p>
+<div class="stats"><div><div class="big pl" id="s1">0</div>Destinations</div><div><div class="big pl" id="s2">0</div>Regions</div><div><div class="big" id="s3">0</div>In your trip</div></div></section>
+<section class="wrap" id="explore" style="padding-top:0"><div class="sec"><b>02</b><span class="tag">Explore</span></div><h2>Find your next destination</h2>
+<div class="ctl"><input id="q" type="search" placeholder="Search country or capital…" aria-label="Search"><select id="rg" aria-label="Region"><option value="">All regions</option></select>
+<select id="pz" aria-label="Population"><option value="">Any size</option><option value="small">Under 10M people</option><option value="medium">10M to 100M</option><option value="large">Over 100M</option></select>
+<select id="so" aria-label="Sort"><option value="name|asc">Name A–Z</option><option value="name|desc">Name Z–A</option><option value="population|desc">Most populous</option><option value="area|desc">Largest area</option></select>
+<button class="btn ghost" id="rs">Reset</button></div>
+<div class="tog"><button class="btn sm" data-view="grid">Grid</button><button class="btn sm ghost" data-view="map">Map</button></div><div class="map" id="map" hidden></div><div class="grid" id="grid"></div><div style="text-align:center;margin-top:64px"><button class="btn ghost" id="more" hidden>Load more</button></div></section>
+<section class="wrap" style="padding-top:0"><div class="sec"><b>03</b><span class="tag">How it works</span></div><h2>From idea to itinerary</h2>
+<div class="stp" tabindex="0"><b>01</b><h3>Discover</h3><div class="d"><div><p>Search every country by name, capital, region or size, on a grid or a world map.</p><div><span class="chip">Search</span> <span class="chip">Filters</span> <span class="chip">Map view</span></div></div></div></div>
+<div class="stp" tabindex="0"><b>02</b><h3>Compare</h3><div class="d"><div><p>See population, area, capital and the current weather before you commit.</p><div><span class="chip">Facts</span> <span class="chip">Weather</span> <span class="chip">Photos</span></div></div></div></div>
+<div class="stp" tabindex="0"><b>03</b><h3>Plan</h3><div class="d"><div><p>Spread stops across days, set budgets and keep notes for each place.</p><div><span class="chip">Days</span> <span class="chip">Budget</span> <span class="chip">Notes</span></div></div></div></div>
+<div class="stp" tabindex="0"><b>04</b><h3>Save</h3><div class="d"><div><p>Your trip is saved to this browser automatically. Copy a summary to share it.</p><div><span class="chip">Auto-save</span> <span class="chip">No account</span></div></div></div></div></section>
+<section class="wrap" style="padding-top:0"><div class="sec"><b>04</b><span class="tag">FAQ</span></div><h2>Common questions answered</h2>
+<div class="fq"><div class="fc"><img src="logo-mark.png" alt=""><h3>Ready to go beyond the expected?</h3><p>Start adding places right away. No account needed.</p><a class="btn" href="#explore">Start planning</a></div><div class="faq">
+<details><summary><i>01</i>Where does the data come from?</summary><p>Wikidata for destinations, Unsplash and Wikipedia for photos, Open-Meteo for weather.</p></details>
+<details><summary><i>02</i>Will my trip be saved?</summary><p>Yes. Your itinerary is stored in a database and linked to this browser, so it stays after a refresh.</p></details>
+<details><summary><i>03</i>Do I need an account?</summary><p>No. Start adding places right away.</p></details>
+<details><summary><i>04</i>Is TripWise free?</summary><p>Yes. It is a free student project.</p></details></div></div></section>
+</main>
+
+<main id="tripv" hidden><section class="wrap"><div class="sec"><b>→</b><span class="tag">My Trip</span></div><h2>Your itinerary.</h2><div id="tl"></div></section></main>
+
+<footer><div class="wrap"><div class="fg"><div><a href="#/"><img src="logo-full.png" alt="TripWise"></a></div><div><h4>Pages</h4><a href="#/">Explore</a><a href="#/trip">My Trip</a></div><div><h4>Legal</h4><a href="#" id="tc">Terms &amp; Conditions</a></div><div><h4>Contact</h4><span>+91 98XXX XXXXX</span></div></div>
+<small><span>© 2026 TripWise · Go beyond the expected.</span><span>Data: Wikidata · Wikipedia · Unsplash · Open-Meteo · OpenStreetMap</span></small></div></footer>
+<dialog id="dlg"></dialog>
+<dialog id="tdlg"><div class="tm"><span class="tag">Last updated 18 October 2026</span><h2 style="font-size:40px;margin:0">Terms &amp; Conditions</h2>
+<ol><li><b>Using TripWise.</b> TripWise is a free trip-planning tool built as a student project. By using it you agree to these terms.</li>
+<li><b>Third-party data.</b> Destination details, photos, descriptions and weather come from Wikidata, Unsplash, Wikipedia and Open-Meteo. The data is provided as is and may be inaccurate or out of date. Check visa rules, safety advisories and prices before you travel.</li>
+<li><b>Your trip data.</b> Your trip, notes and budgets are stored in our database and linked to a random ID kept in your browser. We do not ask for an account or personal details. Clearing your browser data can make your trip inaccessible.</li>
+<li><b>Your content.</b> Do not enter unlawful content or other people's private information in notes.</li>
+<li><b>Acceptable use.</b> Do not misuse, overload, scrape or try to break the service.</li>
+<li><b>Credits.</b> Photos are credited to their photographers. Map data is &copy; OpenStreetMap contributors.</li>
+<li><b>Availability.</b> The service may change, be unavailable, or lose data at any time without notice.</li>
+<li><b>Liability.</b> To the extent permitted by law, TripWise is not liable for losses from decisions made using the service.</li>
+<li><b>Changes and contact.</b> These terms may be updated. Questions: +91 98XXX XXXXX.</li></ol>
+<div><button class="btn" onclick="$('#tdlg').close()">Close</button></div></div></dialog><div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const cid=localStorage.tw_cid||(localStorage.tw_cid=crypto.randomUUID());
+async function api(u,o={}){let r;try{r=await fetch('/api'+u,{...o,headers:{'Content-Type':'application/json','x-client-id':cid}})}catch{throw Error('Network error. Check your connection.')}
+const j=r.status===204?{}:await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||'Request failed');return j}
+const nf=n=>Intl.NumberFormat('en',{notation:'compact'}).format(n);
+let list=[],shown=12,trip=[],stops=[],rc={},tp={name:'My Trip',num_days:3},pc={};
+let view='grid',em,tm,allList=[];
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t.h);t.h=setTimeout(()=>t.style.display='none',2800)}
+function photo(name,alt){return pc[name]||(pc[name]=api('/photo?q='+encodeURIComponent(name)+'&alt='+encodeURIComponent(alt||'')).catch(()=>({url:null})))}
+async function fill(el,name,credit){const p=await photo(name,el.dataset.alt),k=el.classList.contains('tile')?el.innerHTML:'';
+if(p.url)el.innerHTML=`<img src="${esc(p.url)}" alt="${esc(name)}" loading="lazy" referrerpolicy="no-referrer">`+(credit&&p.credit?`<div class="cr">Photo: <a href="${esc(p.link||'#')}" target="_blank" rel="noopener">${esc(p.credit)}</a></div>`:'')+k;
+else if(el.dataset.f)el.innerHTML=`<img class="fl" src="${esc(el.dataset.f)}" alt="">`+k;else return;el.classList.remove('sk');
+const im=el.querySelector('img:not(.fl)');if(im){const tries=[...(p.backup||[])].filter(u=>u!==p.url);im.onerror=()=>{const n=tries.shift();if(n)im.src=n;else{im.onerror=null;if(el.dataset.f)im.outerHTML=`<img class="fl" src="${esc(el.dataset.f)}" alt="">`}}}}
+function count(el,to){let s=performance.now();(function f(t){const k=Math.min((t-s)/900,1);el.textContent=Math.round(to*k);if(k<1)requestAnimationFrame(f)})(s)}
+const setN=(el,n)=>{el.dataset.n=n;if(el.classList.contains('in'))count(el,n)};
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);if(e.target.dataset.n)count(e.target,+e.target.dataset.n)}}),{threshold:.15});
+const watch=()=>document.querySelectorAll('.rv:not(.in),h1:not(.in),h2:not(.in),.big:not(.in)').forEach(e=>io.observe(e));
+const inTrip=c=>trip.some(t=>t.code===c);
+function render(){const g=$('#grid');
+g.innerHTML=list.slice(0,shown).map((d,i)=>`<article class="card rv" style="--d:${i%3*100}ms"><div class="ph sk" data-p="${esc(d.name)}" data-c="${d.code}" data-alt="${esc(d.capital)}" data-f="${esc(d.flag)}"></div><div class="cb"><h3><img src="${esc(d.flag)}" alt="">${esc(d.name)}</h3>
+<div class="meta">${esc(d.capital)} · ${esc(d.region)}</div><div><span class="chip">${nf(d.population)} people</span> <span class="chip">${nf(d.area)} km²</span></div>
+<div class="row"><button class="btn sm ghost" data-v="${d.code}">Details</button><button class="btn sm ${inTrip(d.code)?'ghost':''}" data-a="${d.code}">${inTrip(d.code)?'Added ✓':'+ Add'}</button></div></div></article>`).join('')
+||`<div class="state"><h3>No destinations found</h3><p>Try a different search or region.</p><button class="btn" onclick="reset()">Clear filters</button></div>`;
+g.querySelectorAll('[data-p]').forEach(e=>{fill(e,e.dataset.p);e.onclick=()=>openD(e.dataset.c)});$('#more').hidden=view==='map'||shown>=list.length;if(view==='map')drawMap();watch()}
+async function load(){const g=$('#grid');g.innerHTML='<div class="card"><div class="ph sk"></div><div class="cb" style="height:200px"></div></div>'.repeat(6);
+const [so,or]=$('#so').value.split('|');
+try{const r=await api(`/destinations?q=${encodeURIComponent($('#q').value)}&region=${encodeURIComponent($('#rg').value)}&size=${$('#pz').value}&sort=${so}&order=${or}`);list=r.results;shown=12;
+if(!$('#rg').options[1])$('#rg').innerHTML+=r.regions.map(x=>`<option>${esc(x)}</option>`).join('');
+if(!$('#q').value&&!$('#rg').value&&!$('#pz').value){allList=r.results;setN($('#s1'),r.total);setN($('#s2'),r.regions.length)}render();if(!$('#tripv').hidden)drawTrip()}
+catch(e){g.innerHTML=`<div class="state"><h3>Something went wrong</h3><p>${esc(e.message)}</p><button class="btn" onclick="load()">Try again</button></div>`}}
+function reset(){$('#q').value='';$('#rg').value='';$('#pz').value='';$('#so').value='name|asc';load()}
+async function loadTrip(){try{const r=await api('/trip');tp=r.trip;trip=r.items;stops=r.stops||[];$('#cnt').textContent=trip.length;$('#s3').textContent=trip.length}catch(e){toast(e.message)}}
+async function add(code){try{await api('/itinerary',{method:'POST',body:JSON.stringify({code})});toast('Added to your trip');await loadTrip();render()}catch(e){toast(e.message)}}
+async function del(code){try{await api('/itinerary/'+code,{method:'DELETE'});toast('Removed');await loadTrip();renderTrip();render()}catch(e){toast(e.message)}}
+const money=n=>'₹'+Number(n||0).toLocaleString('en-IN'),sum=a=>a.reduce((s,x)=>s+(x.budget||0),0),alloc=c=>sum(stops.filter(s=>s.code===c)),total=()=>trip.reduce((s,t)=>s+(t.budget||alloc(t.code)),0),
+alHtml=t=>{const a=alloc(t.code),b=t.budget||0;return `<div class="bar"><i style="width:${b?Math.min(100,a/b*100):0}%"></i></div><span class="meta">${money(a)} of ${money(b)} allocated · ${b?(a>b?money(a-b)+' over':money(b-a)+' left'):'set a country budget'}</span>`},
+updateSum=()=>{const e=$('#tb');if(e)e.textContent=money(total());document.querySelectorAll('[data-al]').forEach(e=>{const t=trip.find(x=>x.code===e.dataset.al);if(t)e.innerHTML=alHtml(t)});document.querySelectorAll('[data-dt]').forEach(e=>{const[c,d]=e.dataset.dt.split('|');e.textContent=money(sum(stops.filter(s=>s.code===c&&s.day_number==d)))})};
+const dayLabel=d=>{if(!tp.start_date)return'';const x=new Date(tp.start_date+'T00:00:00');x.setDate(x.getDate()+d-1);return x.toLocaleDateString('en',{weekday:'short',day:'numeric',month:'short'})};
+async function save(u,method,body,full){try{const r=await api(u,{method,body:JSON.stringify(body)});tp=r.trip;trip=r.items;stops=r.stops||[];$('#cnt').textContent=$('#s3').textContent=trip.length;full?renderTrip():updateSum()}catch(e){toast(e.message);await loadTrip();renderTrip()}}
+const regs=async c=>{const r=await(rc[c]||(rc[c]=api('/destinations/'+c+'/regions').catch(()=>({regions:[]}))));const e=$('#dl-'+c);if(e)e.innerHTML=r.regions.map(n=>`<option value="${esc(n)}">`).join('')};
+const dopts=(days,d)=>days.map(x=>`<option value="${x}" ${x===d?'selected':''}>Day ${x}</option>`).join('');
+const cty=t=>{const days=[...Array(tp.num_days)].map((_,i)=>i+1);return `<div class="cty"><div class="ch"><div class="ph sk" data-p="${esc(t.name)}" data-alt="${esc(t.capital)}" data-f="${esc(t.flag)}"></div><div class="ci"><h3>${esc(t.name)}</h3><div class="meta">${esc(t.capital)} · ${esc(t.region)}</div>
+<div class="ef"><input type="number" min="0" data-bud="${t.code}" value="${t.budget||''}" placeholder="Country budget ₹" aria-label="Country budget"></div><div class="al" data-al="${t.code}">${alHtml(t)}</div></div>
+<div class="ac"><button class="btn ghost sm" data-v="${t.code}">Details</button><button class="btn sm" data-d="${t.code}">Remove</button></div></div>
+<div class="ad"><input list="dl-${t.code}" data-new="${t.code}" maxlength="60" placeholder="Add a state or place…" aria-label="Place name"><datalist id="dl-${t.code}"></datalist><select data-nd="${t.code}" aria-label="Day">${dopts(days,1)}</select><button class="btn sm" data-as="${t.code}">+ Add</button></div>
+${days.map(d=>{const its=stops.filter(s=>s.code===t.code&&s.day_number===d);return `<div class="dh"><h3>Day ${d}</h3><span class="meta">${esc(dayLabel(d))} <b data-dt="${t.code}|${d}">${money(sum(its))}</b></span></div>`+(its.map(s=>`<div class="sr"><b>${esc(s.name)}</b><select data-sday="${s.id}" aria-label="Day">${dopts(days,d)}</select><input type="number" min="0" data-sbud="${s.id}" value="${s.budget||''}" placeholder="Budget ₹" aria-label="Budget"><input data-snote="${s.id}" maxlength="200" value="${esc(s.notes)}" placeholder="Notes" aria-label="Notes"><button class="btn sm ghost" data-sd="${s.id}">Remove</button></div>`).join('')||'<div class="emp">No places yet. Add one above.</div>')}).join('')}</div>`};
+function renderTrip(){const days=[...Array(tp.num_days)].map((_,i)=>i+1),f=trip[0];
+$('#tl').innerHTML=`<div class="tsum"><div class="cover ph ${f?'sk':''}" ${f?`data-p="${esc(f.name)}" data-alt="${esc(f.capital)}" data-f="${esc(f.flag)}"`:''}></div><div>
+<input class="tn" id="tn" maxlength="60" value="${esc(tp.name)}" aria-label="Trip name">
+<div class="tctl"><select class="fld" id="nd" aria-label="Number of days">${Array.from({length:14},(_,i)=>i+1).map(n=>`<option value="${n}" ${n===tp.num_days?'selected':''}>${n} day${n>1?'s':''}</option>`).join('')}</select>
+<input class="fld" type="date" id="sd" value="${esc(tp.start_date||'')}" aria-label="Start date"></div>
+<div><span class="chip">${trip.length} place${trip.length===1?'':'s'}</span> <span class="chip">Budget <b id="tb">${money(total())}</b></span></div>
+<div class="row"><button class="btn sm ghost" id="cp">Copy trip summary</button></div></div></div>`
++(trip.length?'<div class="map" id="tmap"></div>':'')
++(trip.length?trip.map(cty).join(''):`<div class="state"><h3>Your trip is empty</h3><p>Add destinations from Explore to start planning.</p><a class="btn" href="#/">Explore destinations</a></div>`);
+document.querySelectorAll('#tl [data-p]').forEach(e=>fill(e,e.dataset.p));trip.forEach(t=>regs(t.code));drawTrip();watch()}
+const tiles=()=>L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'});
+const noMap=el=>{el.innerHTML='<div class="state"><h3>Map unavailable</h3><p>The map library could not load. Check your connection.</p></div>'};
+function setView(v){view=v;$('#grid').hidden=v==='map';$('#map').hidden=v!=='map';$('#more').hidden=v==='map'||shown>=list.length;document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('ghost',b.dataset.view!==v));if(v==='map')drawMap()}
+function drawMap(){const el=$('#map');if(typeof L==='undefined')return noMap(el);
+if(!em){em=L.map(el,{minZoom:2,worldCopyJump:true}).setView([20,10],2);tiles().addTo(em);em.mk=L.layerGroup().addTo(em)}
+em.mk.clearLayers();list.filter(d=>d.latlng&&d.latlng.length===2).forEach(d=>L.circleMarker(d.latlng,{radius:7,color:'#F8F5EE',weight:1,fillColor:'#C88D65',fillOpacity:.9})
+.bindPopup(`<b>${esc(d.name)}</b><br>${esc(d.capital)} · ${esc(d.region)}<div class="row"><button class="btn sm ghost" data-v="${d.code}">Details</button><button class="btn sm ${inTrip(d.code)?'ghost':''}" data-a="${d.code}">${inTrip(d.code)?'Added ✓':'+ Add'}</button></div>`).addTo(em.mk));
+setTimeout(()=>em.invalidateSize(),50)}
+function drawTrip(){const el=$('#tmap');if(tm){tm.remove();tm=null}if(!el)return;if(typeof L==='undefined')return noMap(el);
+const pts=trip.map(t=>{const d=allList.find(x=>x.code===t.code);return d&&d.latlng&&d.latlng.length===2?{t,ll:d.latlng}:null}).filter(Boolean);
+tm=L.map(el,{minZoom:2,worldCopyJump:true});tiles().addTo(tm);
+pts.forEach((p,i)=>L.marker(p.ll,{icon:L.divIcon({className:'pinw',html:`<div class="pin">${i+1}</div>`,iconSize:[32,32]})}).bindPopup(`<b>${esc(p.t.name)}</b><br>${esc(p.t.capital)}`).addTo(tm));
+if(pts.length>1)L.polyline(pts.map(p=>p.ll),{color:'#C88D65',weight:2,dashArray:'6 8'}).addTo(tm);
+pts.length?tm.fitBounds(pts.map(p=>p.ll),{padding:[48,48],maxZoom:5}):tm.setView([20,10],2);setTimeout(()=>tm.invalidateSize(),50)}
+function copyTrip(){const L=[tp.name+(tp.start_date?' ('+tp.start_date+')':'')];trip.forEach(t=>{L.push('',t.name+(t.budget?' - budget '+money(t.budget):''));for(let d=1;d<=tp.num_days;d++){const s=stops.filter(x=>x.code===t.code&&x.day_number===d);if(s.length)L.push('Day '+d+(dayLabel(d)?' ('+dayLabel(d)+')':'')+': '+s.map(x=>x.name+(x.budget?' '+money(x.budget):'')).join(', '))}});
+L.push('','Total budget: '+money(total()));navigator.clipboard.writeText(L.join('\n')).then(()=>toast('Trip summary copied'),()=>toast('Copy is blocked by the browser'))}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.mv){const[c,dir]=b.dataset.mv.split('|');save('/itinerary/'+c+'/move','POST',{direction:dir},1)}if(b.id==='cp')copyTrip();if(b.dataset.view)setView(b.dataset.view)});
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+if(b.dataset.as){const c=b.dataset.as,n=$(`[data-new="${c}"]`).value.trim();if(!n)return toast('Type or pick a place');save('/stops','POST',{code:c,name:n,day_number:+$(`[data-nd="${c}"]`).value},1)}
+if(b.dataset.sd)save('/stops/'+b.dataset.sd,'DELETE',undefined,1)});
+document.addEventListener('change',e=>{const t=e.target,d=t.dataset;
+if(d.day)save('/itinerary/'+d.day,'PATCH',{day_number:+t.value},1);else if(d.bud)save('/itinerary/'+d.bud,'PATCH',{budget:+t.value||0});else if(d.note)save('/itinerary/'+d.note,'PATCH',{notes:t.value});
+else if(d.sday)save('/stops/'+d.sday,'PATCH',{day_number:+t.value},1);else if(d.sbud)save('/stops/'+d.sbud,'PATCH',{budget:+t.value||0});else if(d.snote)save('/stops/'+d.snote,'PATCH',{notes:t.value});
+else if(t.id==='tn')save('/trip','PATCH',{name:t.value});else if(t.id==='nd')save('/trip','PATCH',{num_days:+t.value},1);else if(t.id==='sd')save('/trip','PATCH',{start_date:t.value},1)});
+async function openD(code){const d=$('#dlg');d.innerHTML='<div class="dg"><div class="ph sk"></div><div class="tx"><h3>Loading…</h3></div></div>';d.showModal();
+try{const x=await api('/destinations/'+code);d.innerHTML=`<div class="dg"><div class="ph sk" id="dp" data-alt="${esc(x.capital)}" data-f="${esc(x.flag)}"></div><div class="tx"><span class="tag">${esc([x.region,x.subregion].filter(Boolean).join(' · '))}</span><h2 style="font-size:40px;margin:0">${esc(x.name)}</h2>
+<p>${esc(x.description||'No description available.')}</p><dl><dt>Capital</dt><dd>${esc(x.capital)}</dd><dt>Population</dt><dd>${x.population.toLocaleString()}</dd><dt>Area</dt><dd>${x.area.toLocaleString()} km²</dd>
+<dt>Coordinates</dt><dd>${x.latlng?x.latlng.map(n=>n.toFixed(2)).join(', '):'N/A'}</dd><dt>Weather</dt><dd>${x.weather?`${x.weather.temperature_2m}°C, wind ${x.weather.wind_speed_10m} km/h`:'Unavailable'}</dd></dl>
+<div class="row"><button class="btn ${inTrip(code)?'ghost':''}" data-a="${code}">${inTrip(code)?'Added ✓':'+ Add to trip'}</button><button class="btn ghost" onclick="$('#dlg').close()">Close</button></div></div></div>`;fill($('#dp'),x.name,1)}
+catch(e){d.innerHTML=`<div class="tx"><h3>Couldn't load details</h3><p>${esc(e.message)}</p><button class="btn" onclick="$('#dlg').close()">Close</button></div>`}}
+document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;
+if(b.dataset.v)openD(b.dataset.v);if(b.dataset.d)del(b.dataset.d);if(b.dataset.a){if(inTrip(b.dataset.a))return toast('Already in your trip');await add(b.dataset.a);if($('#dlg').open)openD(b.dataset.a)}});
+$('#dlg').onclick=e=>{if(e.target===e.currentTarget)e.currentTarget.close()};
+let h;$('#q').oninput=()=>{clearTimeout(h);h=setTimeout(load,300)};$('#rg').onchange=$('#so').onchange=$('#pz').onchange=load;$('#rs').onclick=reset;$('#more').onclick=()=>{shown+=12;render()};
+function go(h){location.hash=h}
+function route(){const t=location.hash==='#/trip';$('#home').hidden=t;$('#tripv').hidden=!t;$('#nT').classList.toggle('on',t);$('#nE').classList.toggle('on',!t);if(t){renderTrip();scrollTo(0,0)}}
+addEventListener('hashchange',route);
+const F=[['Japan','Tokyo'],['Italy','Rome'],['New Zealand','Wellington'],['Iceland','Reykjavik'],['Peru','Lima'],['Morocco','Rabat']];$('#tiles').innerHTML=F.map(([n,a],i)=>`<div class="tile rv" style="--d:${i*120}ms" data-p="${n}" data-alt="${a}"><span>${n}</span></div>`).join('');
+document.querySelectorAll('.tile').forEach(t=>fill(t,t.dataset.p));
+const R='Africa,Americas,Asia,Europe,Oceania'.split(',');$('#mq').innerHTML=(R.map(r=>r+'<i>✦</i>').join('')).repeat(4);
+loadTrip().then(route);load();
+const sp=(n,i=[0])=>[...n.childNodes].forEach(c=>{if(c.nodeType===3){const f=document.createDocumentFragment();c.textContent.split(/(\s+)/).forEach(t=>{if(!t.trim())return f.append(t);const w=document.createElement('span');w.className='w';w.innerHTML=`<span style="--i:${i[0]++}">${esc(t)}</span>`;f.append(w)});c.replaceWith(f)}else sp(c,i)});
+document.querySelectorAll('h1,h2,.wm').forEach(el=>sp(el));
+document.querySelectorAll('.hf>*,.sl,.sec,.stats>div,.ctl,details,.lead,.stp,.fc,.fg>div').forEach((e,i)=>{e.classList.add('rv');e.style.setProperty('--d',i%4*100+'ms')});
+let ly=0;addEventListener('scroll',()=>{const y=scrollY;$('nav').classList.toggle('hid',y>ly&&y>160);$('nav').classList.toggle('bg',y>16);$('#tiles').style.setProperty('--sy',y);ly=y},{passive:true});watch();
+$('#tc').onclick=e=>{e.preventDefault();$('#tdlg').showModal()};$('#tdlg').onclick=e=>{if(e.target===e.currentTarget)e.currentTarget.close()};
+const tr=$('#tiles'),cu=$('#cur');document.querySelectorAll('[data-sl]').forEach(b=>b.onclick=()=>tr.scrollBy({left:+b.dataset.sl*(tr.firstChild.offsetWidth+24),behavior:'smooth'}));
+tr.onclick=e=>{const t=e.target.closest('.tile');if(t){$('#q').value=t.dataset.p;load();$('#explore').scrollIntoView()}};
+addEventListener('pointermove',e=>{cu.style.translate=e.clientX+'px '+e.clientY+'px';const o=e.target.closest('.card .ph,.tile');cu.classList.toggle('on',!!o);if(o)cu.textContent=o.classList.contains('tile')?'Explore':'View'},{passive:true});
+</script></body></html>
